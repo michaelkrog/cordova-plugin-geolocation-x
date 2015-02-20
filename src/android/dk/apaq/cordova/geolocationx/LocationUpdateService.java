@@ -243,9 +243,9 @@ public class LocationUpdateService extends Service implements LocationListener {
                 loc.put("bearing", location.getBearing());
                 loc.put("altitude", location.getAltitude());
                 pos.put("coords", loc);
-                post.put("timestamp", new Date().getTime());
+                pos.put("timestamp", new Date().getTime());
 
-                EventBus.getDefault().post(loc);
+                EventBus.getDefault().post(pos);
                 Log.d(TAG, "posting location to bus");
 
 
