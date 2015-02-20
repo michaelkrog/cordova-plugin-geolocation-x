@@ -1,4 +1,4 @@
-package com.tenforwardconsulting.cordova.bgloc;
+package dk.apaq.cordova.geolocationx;
 
 import de.greenrobot.event.EventBus;
 
@@ -37,17 +37,17 @@ public class LocationUpdateService extends Service implements LocationListener {
     private static final String TAG = "LocationUpdateService";
 
     private static final int TWO_MINUTES = 1000 * 60 * 2;
-    
+
     private Location lastLocation;
 
     private Boolean isDebugging = false;
-        
+
     private String notificationTitle = "Background checking";
     private String notificationText = "ENABLED";
 
     private LocationManager locationManager;
     private NotificationManager notificationManager;
-    
+
     @Override
     public IBinder onBind(Intent intent) {
         Log.i(TAG, "OnBind" + intent);
@@ -60,7 +60,7 @@ public class LocationUpdateService extends Service implements LocationListener {
         Log.i(TAG, "OnCreate");
 
         locationManager         = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
-        notificationManager     = (NotificationManager)this.getSystemService(Context.NOTIFICATION_SERVICE);        
+        notificationManager     = (NotificationManager)this.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -72,12 +72,12 @@ public class LocationUpdateService extends Service implements LocationListener {
             Bundle bundle = intent.getExtras();
             for (String key : bundle.keySet()) {
                 Object value = bundle.get(key);
-                Log.d(TAG, String.format("%s %s (%s)", key,  
+                Log.d(TAG, String.format("%s %s (%s)", key,
                     value.toString(), value.getClass().getName()));
             }
 
             isDebugging = Boolean.parseBoolean(intent.getStringExtra("isDebugging"));
-            
+
             notificationTitle = intent.getStringExtra("notificationTitle");
             notificationText = intent.getStringExtra("notificationText");
 
@@ -99,10 +99,10 @@ public class LocationUpdateService extends Service implements LocationListener {
             }
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
             startForeground(startId, notification);
-        }          
-        
+        }
+
         Log.i(TAG, "- notificationTitle: "  + notificationTitle);
-        Log.i(TAG, "- notificationText: "   + notificationText);        
+        Log.i(TAG, "- notificationText: "   + notificationText);
 
         this.startRecording();
 
@@ -115,7 +115,7 @@ public class LocationUpdateService extends Service implements LocationListener {
         Log.w(TAG, "------------------------------------------ Destroyed Location update Service");
         cleanUp();
         super.onDestroy();
-    }   
+    }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
@@ -149,11 +149,11 @@ public class LocationUpdateService extends Service implements LocationListener {
      * Start recording aggresively from all found providers
      */
     private void startRecording() {
-        Log.i(TAG, "startRecording");                       
+        Log.i(TAG, "startRecording");
 
         locationManager.removeUpdates(this);
-           
-        // Turn on all providers aggressively 
+
+        // Turn on all providers aggressively
         List<String> matchingProviders = locationManager.getAllProviders();
         for (String provider: matchingProviders) {
             if (provider != LocationManager.PASSIVE_PROVIDER) {
@@ -225,10 +225,10 @@ public class LocationUpdateService extends Service implements LocationListener {
 
     public void onLocationChanged(Location location) {
         Log.d(TAG, "- onLocationChanged: " + location.getLatitude() + "," + location.getLongitude() + ", accuracy: " + location.getAccuracy() + ", speed: " + location.getSpeed());
-        if(isDebugging){            
+        if(isDebugging){
             Toast.makeText(this, "acy:"+location.getAccuracy()+",v:"+location.getSpeed(), Toast.LENGTH_LONG).show();
         }
-        
+
         if(isBetterLocation(location, lastLocation)){
             Log.d(TAG, "Location is better");
             lastLocation = location;
@@ -245,11 +245,11 @@ public class LocationUpdateService extends Service implements LocationListener {
 
                 EventBus.getDefault().post(loc);
                 Log.d(TAG, "posting location to bus");
-                
+
 
             }catch(JSONException e){
                 Log.e(TAG, "could not parse location");
-            }                            
+            }
 
         }else{
             Log.d(TAG, "Location is worse than current");
