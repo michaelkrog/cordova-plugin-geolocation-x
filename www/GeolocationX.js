@@ -11,13 +11,7 @@ module.exports = {
 
     configure: function(success, failure, config) {
         this.config = config;
-        var params              = JSON.stringify(config.params || {}),
-            headers		        = JSON.stringify(config.headers || {}),
-            url                 = config.url        || 'BackgroundGeoLocation_url',
-            stationaryRadius    = (config.stationaryRadius >= 0) ? config.stationaryRadius : 50,    // meters
-            distanceFilter      = (config.distanceFilter >= 0) ? config.distanceFilter : 500,       // meters
-            locationTimeout     = (config.locationTimeout >= 0) ? config.locationTimeout : 60,      // seconds
-            desiredAccuracy     = (config.desiredAccuracy >= 0) ? config.desiredAccuracy : 100,     // meters
+        var locationTimeout     = (config.locationTimeout >= 0) ? config.locationTimeout : 60,      // seconds
             debug               = config.debug || false,
             notificationTitle   = config.notificationTitle || "Background tracking",
             notificationText    = config.notificationText || "ENABLED";
@@ -28,17 +22,17 @@ module.exports = {
              failure || function() {},
              'GeolocationX',
              'configure',
-             [params, headers, url, stationaryRadius, distanceFilter, locationTimeout, desiredAccuracy, debug, notificationTitle, notificationText, activityType, stopOnTerminate]
+             [locationTimeout, debug, notificationTitle, notificationText, activityType, stopOnTerminate]
         );
     },
-    start: function(success, failure, config) {
+    start: function(success, failure) {
         exec(success || function() {},
              failure || function() {},
              'GeolocationX',
              'start',
              []);
     },
-    stop: function(success, failure, config) {
+    stop: function(success, failure) {
         exec(success || function() {},
             failure || function() {},
             'GeolocationX',
@@ -52,62 +46,26 @@ module.exports = {
             'finish',
             []);
     },
-    changePace: function(isMoving, success, failure) {
+    setMinimumDistance: function(success, failure, value) {
         exec(success || function() {},
             failure || function() {},
             'GeolocationX',
-            'onPaceChange',
-            [isMoving]);
+            'setMinimumDistance',
+            [value]);
     },
-    /**
-    * @param {Integer} stationaryRadius
-    * @param {Integer} desiredAccuracy
-    * @param {Integer} distanceFilter
-    * @param {Integer} timeout
-    */
-    setConfig: function(success, failure, config) {
-        this.apply(this.config, config);
+    setMinimumInterval: function(success, failure, value) {
         exec(success || function() {},
             failure || function() {},
             'GeolocationX',
-            'setConfig',
-            [config]);
+            'setMinimumInterval',
+            [value]);
     },
-    /**
-    * Returns current stationaryLocation if available.  null if not
-    */
-    getStationaryLocation: function(success, failure) {
+    setPrecision: function(success, failure, value) {
         exec(success || function() {},
             failure || function() {},
             'GeolocationX',
-            'getStationaryLocation',
-            []);
-    },
-    /**
-    * Add a stationary-region listener.  Whenever the devices enters "stationary-mode", your #success callback will be executed with #location param containing #radius of region
-    * @param {Function} success
-    * @param {Function} failure [optional] NOT IMPLEMENTED
-    */
-    onStationary: function(success, failure) {
-        var me = this;
-        success = success || function() {};
-        var callback = function(region) {
-            me.stationaryRegion = region;
-            success.apply(me, arguments);
-        };
-        exec(callback,
-            failure || function() {},
-            'GeolocationX',
-            'addStationaryRegionListener',
-            []);
-    },
-    apply: function(destination, source) {
-        source = source || {};
-        for (var property in source) {
-            if (source.hasOwnProperty(property)) {
-                destination[property] = source[property];
-            }
-        }
-        return destination;
+            'setPrecision',
+            [value]);
     }
+
 };

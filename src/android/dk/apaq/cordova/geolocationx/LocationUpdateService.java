@@ -35,6 +35,13 @@ import static java.lang.Math.*;
 
 public class LocationUpdateService extends Service implements LocationListener {
     private static final String TAG = "LocationUpdateService";
+    public static final String ACTION_START = "dk.apaq.cordova.geolocationx.START";
+    public static final String ACTION_STOP = "dk.apaq.cordova.geolocationx.STOP";
+    public static final String ACTION_CONFIGURE = "dk.apaq.cordova.geolocationx.CONFIGURE";
+    public static final String ACTION_SET_MINIMUM_DISTANCE = "dk.apaq.cordova.geolocationx.SET_MINIMUM_DISTANCE";
+    public static final String ACTION_SET_MINIMUM_INTERVAL = "dk.apaq.cordova.geolocationx.SET_MINIMUM_INTERVAL";
+    public static final String ACTION_SET_PRECISION = "dk.apaq.cordova.geolocationx.SET_PRECISION";
+
 
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
@@ -42,8 +49,10 @@ public class LocationUpdateService extends Service implements LocationListener {
 
     private Boolean isDebugging = false;
 
-    private String notificationTitle = "Background checking";
-    private String notificationText = "ENABLED";
+    private String notificationTitle = "";
+    private String notificationText = "";
+    private Long locationTimeout;
+    private String activityType;
 
     private LocationManager locationManager;
     private NotificationManager notificationManager;
@@ -68,43 +77,65 @@ public class LocationUpdateService extends Service implements LocationListener {
         Log.i(TAG, "Received start id " + startId + ": " + intent);
         if (intent != null) {
 
+            Log.d(TAG, "Action: " + intent.getAction());
+
             // debug intent values values
             Bundle bundle = intent.getExtras();
-            for (String key : bundle.keySet()) {
-                Object value = bundle.get(key);
-                Log.d(TAG, String.format("%s %s (%s)", key,
-                    value.toString(), value.getClass().getName()));
+            if(bundle != null) {
+                for (String key : bundle.keySet()) {
+                    Object value = bundle.get(key);
+                    Log.d(TAG, String.format("%s %s (%s)", key,
+                        value.toString(), value.getClass().getName()));
+                }
             }
 
-            isDebugging = Boolean.parseBoolean(intent.getStringExtra("isDebugging"));
 
-            notificationTitle = intent.getStringExtra("notificationTitle");
-            notificationText = intent.getStringExtra("notificationText");
+            if(intent.getAction().equals(ACTION_START)) {
+                this.startRecording();
 
-            // Build a Notification required for running service in foreground.
-            Intent main = new Intent(this, BackgroundGpsPlugin.class);
-            main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
+                // Build a Notification required for running service in foreground.
+                Intent main = new Intent(this, BackgroundGpsPlugin.class);
+                main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Notification.Builder builder = new Notification.Builder(this);
-            builder.setContentTitle(notificationTitle);
-            builder.setContentText(notificationText);
-            builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
-            builder.setContentIntent(pendingIntent);
-            Notification notification;
-            if (android.os.Build.VERSION.SDK_INT >= 16) {
-                notification = buildForegroundNotification(builder);
-            } else {
-                notification = buildForegroundNotificationCompat(builder);
+                Notification.Builder builder = new Notification.Builder(this);
+                builder.setContentTitle(notificationTitle);
+                builder.setContentText(notificationText);
+                builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
+                builder.setContentIntent(pendingIntent);
+                Notification notification;
+                notification = builder.build();
+                notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
+                startForeground(startId, notification);
             }
-            notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
-            startForeground(startId, notification);
+
+            if(intent.getAction().equals(ACTION_CONFIGURE)) {
+                locationTimeout = Long.parseLong(intent.getStringExtra("locationTimeout"));
+                isDebugging = Boolean.parseBoolean(intent.getStringExtra("isDebugging"));
+                notificationTitle = intent.getStringExtra("notificationTitle");
+                notificationText = intent.getStringExtra("notificationText");
+                activityType = intent.getStringExtra("activityType");
+
+                Log.i(TAG, "- notificationTitle: "  + notificationTitle);
+                Log.i(TAG, "- notificationText: "   + notificationText);
+            }
+
+            if(intent.getAction().equals(ACTION_SET_MINIMUM_DISTANCE)) {
+                // TODO
+                Log.i(TAG, "- minimumDistance: "  + intent.getStringExtra("value"));
+            }
+
+            if(intent.getAction().equals(ACTION_SET_MINIMUM_INTERVAL)) {
+                // TODO
+                Log.i(TAG, "- minimumInterval: "  + intent.getStringExtra("value"));
+            }
+
+            if(intent.getAction().equals(ACTION_SET_PRECISION)) {
+                // TODO
+                Log.i(TAG, "- precision: "  + intent.getStringExtra("value"));
+            }
+
         }
-
-        Log.i(TAG, "- notificationTitle: "  + notificationTitle);
-        Log.i(TAG, "- notificationText: "   + notificationText);
-
-        this.startRecording();
 
         //We want this service to continue running until it is explicitly stopped
         return START_REDELIVER_INTENT;
@@ -122,17 +153,6 @@ public class LocationUpdateService extends Service implements LocationListener {
     public void onTaskRemoved(Intent rootIntent) {
         this.stopSelf();
         super.onTaskRemoved(rootIntent);
-    }
-
-    @TargetApi(16)
-    private Notification buildForegroundNotification(Notification.Builder builder) {
-        return builder.build();
-    }
-
-    @SuppressWarnings("deprecation")
-    @TargetApi(15)
-    private Notification buildForegroundNotificationCompat(Notification.Builder builder) {
-        return builder.getNotification();
     }
 
     @Override
@@ -254,7 +274,7 @@ public class LocationUpdateService extends Service implements LocationListener {
             }
 
         }else{
-            Log.d(TAG, "Location is worse than current");
+            Log.d(TAG, "Location is no better than current");
         }
     }
 

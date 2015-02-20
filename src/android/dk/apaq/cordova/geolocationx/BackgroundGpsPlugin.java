@@ -21,18 +21,18 @@ public class BackgroundGpsPlugin extends CordovaPlugin {
     public static final String ACTION_START = "start";
     public static final String ACTION_STOP = "stop";
     public static final String ACTION_CONFIGURE = "configure";
-
-    private Intent updateServiceIntent;
+    public static final String ACTION_SET_MIN_DISTANCE = "setMinimumDistance";
+    public static final String ACTION_SET_MIN_INTERVAL = "setMinimumInterval";
+    public static final String ACTION_SET_PRECISION = "setPrecision";
 
     private Boolean isEnabled = false;
 
-    private String isDebugging = "false";
-
-    private String notificationTitle = "Background tracking";
-    private String notificationText = "ENABLED";
-
-    private String stopOnTerminate = "false";
-
+    private String isDebugging;
+    private String locationTimeout;
+    private String activityType;
+    private String notificationTitle;
+    private String notificationText;
+    private String stopOnTerminate;
 
     private CallbackContext callback;
 
@@ -50,49 +50,63 @@ public class BackgroundGpsPlugin extends CordovaPlugin {
 
         Activity activity = this.cordova.getActivity();
         Boolean result = false;
-        updateServiceIntent = new Intent(activity, LocationUpdateService.class);
+
 
         if (ACTION_START.equalsIgnoreCase(action) && !isEnabled) {
             result = true;
 
-            updateServiceIntent.putExtra("isDebugging", isDebugging);
-            updateServiceIntent.putExtra("notificationTitle", notificationTitle);
-            updateServiceIntent.putExtra("notificationText", notificationText);
+            activity.startService(new Intent(LocationUpdateService.ACTION_START, null, activity, LocationUpdateService.class));
 
-            activity.startService(updateServiceIntent);
             isEnabled = true;
 
         } else if (ACTION_STOP.equalsIgnoreCase(action)) {
             isEnabled = false;
             result = true;
-            activity.stopService(updateServiceIntent);
+
+            activity.stopService(new Intent(activity, LocationUpdateService.class));
+
             callbackContext.success();
 
         } else if (ACTION_CONFIGURE.equalsIgnoreCase(action)) {
             result = true;
             try {
                 // Params.
-                //    0       1       2           3               4                5               6            7           8                9               10              11
-                //[params, headers, url, stationaryRadius, distanceFilter, locationTimeout, desiredAccuracy, debug, notificationTitle, notificationText, activityType, stopOnTerminate]
+                //[locationTimeout, debug, notificationTitle, notificationText, activityType, stopOnTerminate]
+                Intent intent = new Intent(LocationUpdateService.ACTION_CONFIGURE, null, activity, LocationUpdateService.class);
+                intent.putExtra("locationTimeout", data.getString(0));
+                intent.putExtra("isDebugging", data.getString(1));
+                intent.putExtra("notificationTitle", data.getString(2));
+                intent.putExtra("notificationText", data.getString(3));
+                intent.putExtra("activityType", data.getString(4));
 
-                this.isDebugging = data.getString(7);
-                this.notificationTitle = data.getString(8);
-                this.notificationText = data.getString(9);
-                this.stopOnTerminate = data.getString(11);
+                activity.startService(intent);
 
                 this.callback = callbackContext;
-
-                Log.i(TAG, "- stopOnTerminate: "     + stopOnTerminate);
-                Log.i(TAG, "- isDebugging: "    + isDebugging);
-                Log.i(TAG, "- notificationTitle: "  + notificationTitle);
-                Log.i(TAG, "- notificationText: "   + notificationText);
-
+                Log.i(TAG, "- configured: "     + data.toString());
             } catch (JSONException e) {
-                callbackContext.error("authToken/url required as parameters: " + e.getMessage());
+                callbackContext.error("Invalid parameters: " + e.getMessage());
             }
+        } else if (ACTION_SET_MIN_DISTANCE.equalsIgnoreCase(action)) {
+            callSetter(activity, LocationUpdateService.ACTION_SET_MINIMUM_DISTANCE, data, callbackContext);
+        } else if (ACTION_SET_MIN_INTERVAL.equalsIgnoreCase(action)) {
+            callSetter(activity, LocationUpdateService.ACTION_SET_MINIMUM_INTERVAL, data, callbackContext);
+        } else if (ACTION_SET_PRECISION.equalsIgnoreCase(action)) {
+            callSetter(activity, LocationUpdateService.ACTION_SET_PRECISION, data, callbackContext);
         }
 
         return result;
+    }
+
+    private void callSetter(Activity activity, String action, JSONArray data, CallbackContext callbackContext) {
+        try {
+            String value = data.getString(0);
+            Intent setterIntent = new Intent(action, null, activity, LocationUpdateService.class);
+            setterIntent.putExtra("value", value);
+
+            activity.startService(setterIntent);
+        } catch (JSONException e) {
+            callbackContext.error("Unable to parse value: " + e.getMessage());
+        }
     }
 
     /**
@@ -103,7 +117,7 @@ public class BackgroundGpsPlugin extends CordovaPlugin {
         Activity activity = this.cordova.getActivity();
 
         if(isEnabled && stopOnTerminate.equalsIgnoreCase("true")) {
-            activity.stopService(updateServiceIntent);
+            activity.stopService(new Intent(this.cordova.getActivity(), LocationUpdateService.class));
         }
     }
 
