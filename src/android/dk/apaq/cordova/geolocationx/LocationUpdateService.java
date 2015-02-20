@@ -234,6 +234,7 @@ public class LocationUpdateService extends Service implements LocationListener {
             lastLocation = location;
             // send it via bus to activity
             try{
+                JSONObject pos = new JSONObject();
             JSONObject loc = new JSONObject();
                 loc.put("latitude", location.getLatitude());
                 loc.put("longitude", location.getLongitude());
@@ -241,7 +242,8 @@ public class LocationUpdateService extends Service implements LocationListener {
                 loc.put("speed", location.getSpeed());
                 loc.put("bearing", location.getBearing());
                 loc.put("altitude", location.getAltitude());
-                loc.put("recorded_at", new Date().getTime());
+                pos.put("coords", loc);
+                post.put("timestamp", new Date().getTime());
 
                 EventBus.getDefault().post(loc);
                 Log.d(TAG, "posting location to bus");
