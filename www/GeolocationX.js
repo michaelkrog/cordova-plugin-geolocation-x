@@ -26,7 +26,7 @@ module.exports = {
 
         exec(success || function() {},
              failure || function() {},
-             'BackgroundGeoLocation',
+             'GeolocationX',
              'configure',
              [params, headers, url, stationaryRadius, distanceFilter, locationTimeout, desiredAccuracy, debug, notificationTitle, notificationText, activityType, stopOnTerminate]
         );
@@ -34,28 +34,28 @@ module.exports = {
     start: function(success, failure, config) {
         exec(success || function() {},
              failure || function() {},
-             'BackgroundGeoLocation',
+             'GeolocationX',
              'start',
              []);
     },
     stop: function(success, failure, config) {
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'stop',
             []);
     },
     finish: function(success, failure) {
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'finish',
             []);
     },
     changePace: function(isMoving, success, failure) {
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'onPaceChange',
             [isMoving]);
     },
@@ -69,7 +69,7 @@ module.exports = {
         this.apply(this.config, config);
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'setConfig',
             [config]);
     },
@@ -79,7 +79,7 @@ module.exports = {
     getStationaryLocation: function(success, failure) {
         exec(success || function() {},
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'getStationaryLocation',
             []);
     },
@@ -97,7 +97,7 @@ module.exports = {
         };
         exec(callback,
             failure || function() {},
-            'BackgroundGeoLocation',
+            'GeolocationX',
             'addStationaryRegionListener',
             []);
     },

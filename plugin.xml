@@ -13,11 +13,11 @@
         <engine name="cordova" version=">=3.0.0" />
     </engines>
 
-    <!--dependency id="org.apache.cordova.geolocation" /-->
+    <dependency id="org.apache.cordova.geolocation" />
     <!--dependency id="org.apache.cordova.dialogs" /-->
 
     <js-module src="www/GeoLocationX.js" name="GeoLocationX">
-        <clobbers target="plugins.geoLocationX" />
+        <clobbers target="plugins.geolocationX" />
     </js-module>
 
     <!-- android -->
@@ -41,7 +41,7 @@
             <uses-permission android:name="android.permission.WAKE_LOCK" />
         </config-file>
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="BackgroundGeoLocation">
+            <feature name="GeolocationX">
                 <param name="android-package" value="dk.apaq.cordova.geolocationx.BackgroundGpsPlugin"/>
             </feature>
         </config-file>
