@@ -13,7 +13,7 @@
         <engine name="cordova" version=">=3.0.0" />
     </engines>
 
-    <dependency id="org.apache.cordova.geolocation" />
+    <!--dependency id="org.apache.cordova.geolocation" /-->
     <dependency id="org.apache.cordova.dialogs" />
 
     <js-module src="www/GeoLocationX.js" name="GeoLocationX">
@@ -27,8 +27,6 @@
 
         <source-file src="src/android/dk/apaq/cordova/geolocationx/BackgroundGpsPlugin.java" target-dir="src/dk/apaq/cordova/geolocationx" />
         <source-file src="src/android/dk/apaq/cordova/geolocationx/LocationUpdateService.java" target-dir="src/dk/apaq/cordova/geolocationx" />
-
-        <source-file src="src/android/notification.png" target-dir="res/drawable" />
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <service android:name="dk.apaq.cordova.geolocationx.LocationUpdateService" />
